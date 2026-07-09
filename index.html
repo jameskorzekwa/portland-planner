@@ -211,11 +211,12 @@
   <div class="notebox">
     <h3>Planning notes &amp; honesty flags</h3>
     <ul>
-      <li><b>Prices are for your dates — Sun Nov 22 → Sat Nov 28, 2026</b> (6 nights, 8 guests + pets), all fees included, checked today. All nine priced homes were confirmed <b>available</b> for these dates. Rates still move with demand, so reconfirm at booking.</li>
-      <li><b>Every home is now priced for Nov 22–28</b> (6 nights, all-in). The six property-managed homes (Ocean House, the Hood River trio, Govy Alpine, Crystal Creek) were quoted directly on their booking sites — add a pet fee (typically ~$60–150) at checkout for those.</li>
-      <li><b>Pets:</b> ✓ = pet policy confirmed on the listing. "(confirm)" = surfaced via a pet-friendly filter but worth double-checking dog count/size and any fee.</li>
-      <li><b>Portland proper:</b> large whole-home rentals are genuinely limited in the city core (strict short-term-rental rules), so the best 6–10 group homes sit in walkable close-in neighborhoods — Hawthorne, Nob Hill/NW, Laurelhurst, North Portland — a few minutes from downtown.</li>
-      <li><b>Capacity:</b> a few standouts sleep 12–14; flagged where they run larger than your 6–10 target in case the extra room is welcome.</li>
+      <li><b>27 homes now, on-spec (sleeps 6–12) and pet-friendly.</b> The old "also worth a look" leads were promoted into real cards or dropped if off-spec; every home below is an entire house you can bring the dogs to.</li>
+      <li><b>🐾 4+ dogs — only Mt Hood is confirmed.</b> Every <b>Mount Hood</b> home (Moosewood, Salmon River, Cedar Creek, Chalet am Berg, plus Govy Alpine &amp; Crystal Creek) is managed by Mt Hood Vacation Rentals, whose published policy states verbatim: <i>"We do not limit the size or number of dogs that may join you."</i> Register your dog count at booking (a per-dog fee applies) or call them to add more. Everywhere else caps lower: <b>Portland</b> and <b>wine country</b> top out at 3 dogs (Rhone Retreat, Dogwood Villa), most listings allow 2, and Vacasa's Gorge homes say "dog-friendly" without a published number — so confirm 4 dogs with the host before booking.</li>
+      <li><b>Pets:</b> the 🐾 line on each card shows what the listing publishes. "No dog limit" = Mt Hood policy above. A stated number (e.g. "up to 2 dogs") is a hard cap. "Dog count not stated" = pet-friendly but confirm the number with the host.</li>
+      <li><b>Prices:</b> shown where I could pull a live all-in quote for Nov 22–28 (the Mt Hood cabins, plus the original priced homes). Blank price = not yet quoted; we'll do costs in the next pass.</li>
+      <li><b>Portland proper:</b> large whole-home rentals are genuinely limited in the city core (strict short-term-rental rules), so the best 6–10 group homes sit in walkable close-in neighborhoods — Hawthorne, Nob Hill/NW, Laurelhurst, Mt Tabor, North Portland — a few minutes from downtown.</li>
+      <li><b>Coast is still light (3 homes).</b> The big oceanfront Beachcomber houses I checked don't allow pets, and the auto-suggested coast listings turned out to be dead links — so I held off rather than add anything unverified. Say the word and I'll do a dedicated coast pass (Vacasa/Meredith + calling managers on dog counts).</li>
       <li><b>Next step:</b> tell me your favorites (use the status + notes on each card) and I'll confirm exact availability, compare total costs, and dig deeper on the front-runners.</li>
     </ul>
   </div>
@@ -232,7 +233,7 @@ const HOMES = [
    sleeps:8, br:3, ba:2, pet:"ok", petText:"Dog-friendly ✓ ($60/dog)",
    scenic:"Oceanfront home built up high for a full sea-and-sky panorama, with direct Haystack Rock views, vaulted ceilings and a gas fireplace.",
    tags:["Oceanfront","Haystack Rock","Fireplace","Deck"], price:"$6,977 · 6 nts",
-   img:"assets/8a26b914156772832dbbce8071fdfcca.jpg",
+   img:"assets/8a26b914156772832dbbce8071fdfcca.webp",
    url:"https://www.beachcombervacationhomes.com/property/ocean-house/"},
   {id:"cb-oceanviews", loc:"coast", name:"Cannon Beach Ocean-View Home", area:"Cannon Beach · Vrbo",
    sleeps:10, br:5, ba:3, pet:"ok", petText:"Pet-friendly ✓",
@@ -272,6 +273,18 @@ const HOMES = [
    tags:["Nob Hill","Walk to NW 23rd","Historic"], price:"$5,980 · 6 nts",
    img:"assets/1710ad3b9f9a92b4c28cebd02b0c8770.jpg",
    url:"https://www.vrbo.com/4092857"},
+  {id:"rhone-retreat", loc:"portland", name:"Rhone Retreat — Hot Tub & Fenced Yard", area:"SE Portland (Mt Tabor) · Vrbo",
+   sleeps:10, br:5, ba:3, pet:"ok", petText:"Dog-friendly ✓ (up to 3 dogs · $100/pet)",
+   scenic:"Historic Craftsman with a $300k remodel — new private hot tub, 7-ft pool table, and a fully fenced backyard with BBQ; walk to Division, Hawthorne and Mt Tabor Park.",
+   tags:["Fenced yard","Hot tub","Pool table","9.6★ (34)"], price:"",
+   img:"https://media.vrbo.com/lodging/89000000/88620000/88617300/88617251/27f64484.jpg",
+   url:"https://www.vrbo.com/9747744ha"},
+  {id:"rooftop-hawthorne", loc:"portland", name:"Rooftop Deck — Heart of Hawthorne", area:"SE Portland (Hawthorne) · Vrbo",
+   sleeps:8, br:4, ba:2, pet:"ok", petText:"Pet-friendly ✓ (dog count not stated)",
+   scenic:"Artsy 4-bedroom with a private rooftop deck and city views in the heart of Hawthorne's 'Foodie Row' — a third-floor walk-up, entirely yours with a private entrance.",
+   tags:["Rooftop deck","Walkable","Foodie Row","3rd-floor walk-up"], price:"",
+   img:"https://media.vrbo.com/lodging/107000000/106820000/106819400/106819388/54722570.jpg",
+   url:"https://www.vrbo.com/4092988"},
 
   /* ===== COLUMBIA RIVER GORGE ===== */
   {id:"surfs-up", loc:"gorge", name:"Surf's Up", area:"Hood River · Columbia Gorge Vacation Rentals",
@@ -292,6 +305,24 @@ const HOMES = [
    tags:["Spacious","Near river","Pet-friendly"], price:"$3,235 · 6 nts",
    img:"assets/357575d5f5e7c4ff7ce8e581866de4fe.jpg",
    url:"https://www.columbiagorgevacationrentals.com/vrp/unit/Clearwater_Landing-9-15"},
+  {id:"crows-nest", loc:"gorge", name:"Crow's Nest — Gorge-View Home w/ Hot Tub", area:"The Dalles · Vacasa",
+   sleeps:10, br:4, ba:3, pet:"ok", petText:"Dog-friendly ✓ (dog count not stated)",
+   scenic:"Striking all-wood home on 6 acres above Rowena Canyon — floor-to-ceiling windows over the Columbia River, a wrap-around deck with hot tub, and raptors riding the cliff updrafts.",
+   tags:["Gorge views","Riverfront","Hot tub","4.89★ (63)"], price:"",
+   img:"https://vacasa-units.imgix.net/pal/1015196/69eb9c437f80020014a704fc.jpg?w=1280&fit=max&q=40&auto=format",
+   url:"https://www.vacasa.com/unit/1015196"},
+  {id:"hr-mtadams", loc:"gorge", name:"Modern Home w/ Mt Adams Views", area:"Hood River · Vacasa",
+   sleeps:8, br:4, ba:3, pet:"ok", petText:"Dog-friendly ✓ (dog count not stated)",
+   scenic:"Bright modern home with floor-to-ceiling windows and a private balcony framing Mt Adams — a 20-minute walk to downtown Hood River's breweries and cafés.",
+   tags:["Mt Adams views","Walk to town","Chef's kitchen","4.83★ (96)"], price:"",
+   img:"https://vacasa-units.imgix.net/pal/1015440/69a95f26ccd7b10052a305cb.jpg?w=1280&fit=max&q=40&auto=format",
+   url:"https://www.vacasa.com/unit/1015440"},
+  {id:"parkdale-forest", loc:"gorge", name:"Parkdale Forest Paradise — Hot Tub & Game Room", area:"Parkdale · Vacasa",
+   sleeps:11, br:5, ba:3, pet:"ok", petText:"Dog-friendly ✓ (up to 2 dogs)",
+   scenic:"Two-story home on a forested 2.5 acres below Mt Hood — mountain views from two decks, a covered hot tub, and a game room with ping-pong, pool and foosball.",
+   tags:["Mt Hood views","Hot tub","Game room","Forested acres"], price:"",
+   img:"https://vacasa-units.imgix.net/pal/1015496/69a95f4d45ef000036838f26.jpg?w=1280&fit=max&q=40&auto=format",
+   url:"https://www.vacasa.com/unit/1015496"},
 
   /* ===== MOUNT HOOD ===== */
   {id:"govy-alpine", loc:"hood", name:"Govy Alpine Getaway", area:"Government Camp · Mt Hood Vacation Rentals",
@@ -306,6 +337,30 @@ const HOMES = [
    tags:["Riverfront","Mountain views","Fireplaces"], price:"$2,769 · 6 nts",
    img:"assets/78d37034ecae1a4a8d503b9437eb46a3.jpg",
    url:"https://www.mthoodrentals.com/vrp/unit/Crystal_Creek_Chalet-1267-15"},
+  {id:"moosewood", loc:"hood", name:"Moosewood Cabin", area:"Government Camp · Mt Hood Vacation Rentals",
+   sleeps:10, br:3, ba:1.5, pet:"ok", petText:"Dogs welcome ✓ — no limit on number of dogs",
+   scenic:"Forest cabin a 5-minute walk to downtown Government Camp — hot tub and firepit on the back deck, bunks for the kids, and a front-yard view of Skibowl's Saturday-night fireworks.",
+   tags:["Ski village","Hot tub","Walk to town","No dog limit"], price:"$2,544 · 6 nts",
+   img:"https://img.trackhs.com/x630/https://track-pm.s3.amazonaws.com/meredith/image/7f9e8ba9-5a9b-493f-83e4-ac51998c1a92",
+   url:"https://www.mthoodrentals.com/vrp/unit/Moosewood_Cabin-1278-15"},
+  {id:"salmon-river", loc:"hood", name:"Salmon River Chalet", area:"Welches · Mt Hood Vacation Rentals",
+   sleeps:10, br:4, ba:2.5, pet:"ok", petText:"Dogs welcome ✓ — no limit on number of dogs",
+   scenic:"Chalet right on the Salmon River on a wooded acre with trails — wrap-around deck and firepit for riverside stargazing, plus a game room with foosball and shuffleboard.",
+   tags:["Riverfront","Game room","Wood stove","No dog limit"], price:"$3,004 · 6 nts",
+   img:"https://img.trackhs.com/x630/https://track-pm.s3.amazonaws.com/meredith/image/66bebfc2-cc17-47be-975b-506d5b27fdde",
+   url:"https://www.mthoodrentals.com/vrp/unit/Salmon_River_Chalet-1285-15"},
+  {id:"cedar-creek", loc:"hood", name:"Cedar Creek Hideaway — Geodesic Dome", area:"Welches · Mt Hood Vacation Rentals",
+   sleeps:9, br:4, ba:2.5, pet:"ok", petText:"Dogs welcome ✓ — no limit on number of dogs",
+   scenic:"A one-of-a-kind geodesic dome on 7 secluded acres with two creeks and a waterfall trail — deer at dawn, no cable and limited cell service for a true unplugged retreat.",
+   tags:["Geodesic dome","Secluded 7 acres","Creek & waterfall","No dog limit"], price:"$2,418 · 6 nts",
+   img:"https://img.trackhs.com/x630/https://track-pm.s3.amazonaws.com/meredith/image/5e36516d-115f-46e8-bd04-9d672989e9f9",
+   url:"https://www.mthoodrentals.com/vrp/unit/Cedar_Creek_Hideaway-1262-15"},
+  {id:"chalet-am-berg", loc:"hood", name:"Chalet am Berg — Upscale Creekside Chalet", area:"Government Camp · Mt Hood Vacation Rentals",
+   sleeps:10, br:4, ba:4.5, pet:"ok", petText:"Dogs welcome ✓ — no limit on number of dogs",
+   scenic:"Upscale three-level chalet in a wooded creekside setting — a vaulted, glass-walled great room that feels like a treehouse, private hot tub, and direct access to the Glade Trail.",
+   tags:["Upscale chalet","Hot tub","En-suite bedrooms","No dog limit"], price:"",
+   img:"https://img.trackhs.com/x630/https://track-pm.s3.amazonaws.com/meredith/image/b7778718-ee7f-4867-a4d2-0e65c13e21f6",
+   url:"https://www.mthoodrentals.com/vrp/unit/Chalet_am_Berg-1265-15"},
 
   /* ===== WILLAMETTE VALLEY WINE COUNTRY ===== */
   {id:"henrys-hideout", loc:"wine", name:"Henry's Hideout — Vineyard View Estate", area:"Dundee · Vrbo",
@@ -326,29 +381,27 @@ const HOMES = [
    tags:["Vineyard views","Hot tub + sauna","Fire pit"], price:"$7,206 · 6 nts",
    img:"assets/2b07c6db017e1e36f09f8f6006cc5216.jpg",
    url:"https://www.vrbo.com/1069675"},
+  {id:"carlton-gates", loc:"wine", name:"Carlton Gates — Walk to Tasting Rooms", area:"Carlton · Vrbo",
+   sleeps:10, br:4, ba:3, pet:"ok", petText:"Dog-friendly ✓ (listing indicates 2 small dogs — confirm)",
+   scenic:"Designer-finished home a short stroll from downtown Carlton's tasting rooms and new pool — great room with gas fireplace, two firepit patios, and a private 70-inch theater.",
+   tags:["Walk to wineries","Theater room","Firepits","10★ (274)"], price:"",
+   img:"https://media.vrbo.com/lodging/35000000/34590000/34581100/34581034/03f2aac8.jpg",
+   url:"https://www.vrbo.com/414703"},
+  {id:"pearl-newberg", loc:"wine", name:"The Pearl of Newberg — Luxury Craftsman", area:"Newberg · Vrbo",
+   sleeps:9, br:4, ba:3.5, pet:"ok", petText:"Dog-friendly ✓ (up to 2 dogs · $100/dog)",
+   scenic:"Restored 1920s craftsman in the heart of Newberg — rich woodwork, a chef's kitchen, a finished basement bar, and a fenced backyard with pergola, firepit and porch swing.",
+   tags:["Craftsman","Fenced yard","Walkable","10★ (39)"], price:"",
+   img:"https://media.vrbo.com/lodging/28000000/27170000/27168000/27167958/d3ab05c8.jpg",
+   url:"https://www.vrbo.com/1380847"},
+  {id:"dogwood-villa", loc:"wine", name:"Dogwood Villa — Dundee Hills Views", area:"Dundee · iTrip",
+   sleeps:12, br:5, ba:2.5, pet:"ok", petText:"Dog-friendly ✓ (up to 3 dogs · $100/pet)",
+   scenic:"Three-level home perched above downtown Dundee with sweeping Willamette Valley views — a covered deck, new hot tub with bistro lights, firepit, and a garage game room.",
+   tags:["Valley views","Hot tub","Game room","Walk to Dundee"], price:"",
+   img:"https://s3.amazonaws.com/st1.itrip.net/upload/1600/395_sw_dogwood_dr202512.1741714504.jpg",
+   url:"https://www.itrip.net/dundee-vacation-rental/dogwood-villa"},
 ];
 
-const ALSO = {
-  coast:[
-    {name:"Whalesong Overlook (Pacific City)", url:"https://www.beachcombersnw.com/pacific-city-oregon", note:"sleeps 10, hot tub + game room, Cape Kiwanda overlook"},
-    {name:"Oceanfront Modern Lodge (Manzanita)", url:"https://www.vacationrentalsmanzanita.com/vacation-rentals", note:"sleeps 14, right on Manzanita beach — larger than needed but stunning"},
-    {name:"Three Arch Rocks view homes (Oceanside)", url:"https://www.beachcombersnw.com/oceanside-oregon", note:"hillside decks over the wildlife refuge; several pet-friendly"},
-  ],
-  portland:[
-    {name:"Magnificent Home on the Willamette River (Oak Grove)", url:"https://www.vrbo.com/search?destination=Portland%2C+Oregon&adults=8&house_rules_group=pets_allowed", note:"sleeps 12, riverfront, hot tub & fire-pit, 9 mi to downtown"},
-    {name:"Spacious 5BR Sunlit Craftsman (SW Portland)", url:"https://www.vrbo.com/5117622", note:"sleeps 10, arcade, ~$456/night"},
-    {name:"Rooftop Deck — Heart of Hawthorne", url:"https://www.vrbo.com/4092988", note:"sleeps 8, rooftop deck, ~$690/night"},
-  ],
-  hood:[
-    {name:"Moosewood Cabin (Government Camp)", url:"https://www.mthoodrentals.com/vrp/unit/Moosewood_Cabin-1278-15", note:"sleeps 10, private hot tub, classic Govy cabin"},
-    {name:"Salmon River Chalet (Welches)", url:"https://www.mthoodrentals.com/vrp/unit/Salmon_River_Chalet-1285-15", note:"sleeps 10, riverside village setting"},
-    {name:"Deer View Retreat (Welches)", url:"https://www.mthoodrentals.com/vrp/unit/Deer_View_Retreat-1268-15", note:"sleeps 14, 5 baths — for a bigger crowd"},
-  ],
-  wine:[
-    {name:"Carlton Gates — Willamette Valley Luxury", url:"https://www.vrbo.com/414703", note:"sleeps 10, luxury home near Carlton's wineries"},
-    {name:"The Pearl of Newberg — Luxury Craftsman", url:"https://www.vrbo.com/1380847", note:"sleeps 9, polished Craftsman in Newberg"},
-  ],
-};
+const ALSO = {};
 
 const LOCS = {
   coast:   {name:"🌊 Oregon Coast", meta:"≈ 1.5–2 hrs west of Portland", blurb:"Dramatic Pacific beaches, sea-stacks and sunsets, and some of the most dog-friendly towns anywhere. Cannon Beach (with iconic Haystack Rock) is the classic; Manzanita, Pacific City and Oceanside trade crowds for jaw-dropping headland views. Bracing, beautiful and cozy in the off-season."},
@@ -527,7 +580,11 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
     "magic-house":[45.50919,-122.62304],"bright-modern":[45.55632,-122.67526],"laurelhurst-new":[45.5300,-122.6250],"historic-6br":[45.5300,-122.6970],
     "surfs-up":[45.7087,-121.5150],"grandview":[45.7010,-121.5290],"clearwater":[45.7150,-121.5050],
     "govy-alpine":[45.3015,-121.7560],"crystal-creek":[45.3430,-121.9510],
-    "henrys-hideout":[45.28654,-123.03194],"cloud-wine":[45.27642,-123.0084],"parrett":[45.2600,-122.8700]
+    "henrys-hideout":[45.28654,-123.03194],"cloud-wine":[45.27642,-123.0084],"parrett":[45.2600,-122.8700],
+    "rhone-retreat":[45.49629,-122.60758],"rooftop-hawthorne":[45.51595,-122.64900],
+    "crows-nest":[45.6819,-121.3020],"hr-mtadams":[45.7100,-121.5150],"parkdale-forest":[45.5182,-121.6017],
+    "moosewood":[45.3035,-121.7530],"salmon-river":[45.3350,-121.9540],"cedar-creek":[45.3400,-121.9600],"chalet-am-berg":[45.3020,-121.7560],
+    "carlton-gates":[45.28804,-123.17737],"pearl-newberg":[45.30546,-122.96948],"dogwood-villa":[45.283244,-123.014777]
   };
   const COL = (typeof PINCOL!=="undefined")?PINCOL:{coast:"#1f6fb2",portland:"#1f3d2f",gorge:"#1f7d68",hood:"#4a5fae",wine:"#8a2f86"};
   const hav=(a,b)=>{const R=3958.8,t=x=>x*Math.PI/180;const d1=t(b[0]-a[0]),d2=t(b[1]-a[1]);const s=Math.sin(d1/2)**2+Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(s));};
