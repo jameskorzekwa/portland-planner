@@ -149,6 +149,7 @@
   .pickbtn:hover{border-color:var(--moss)}
   .pickbtn.on{background:var(--evergreen);color:#fff;border-color:var(--evergreen)}
   .card.picked{border-color:var(--accent);box-shadow:0 0 0 2px rgba(196,98,45,.30),var(--shadow)}
+  .region-badge{position:absolute;left:10px;top:10px;background:var(--pin,#333);color:#fff;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:1;max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -406,8 +407,10 @@ function cardHTML(h){
   const opts = STATUS.map(([v,l])=>`<option value="${v}"${v===status?" selected":""}>${l}</option>`).join("");
   const priceBadge = (h.price)?`<span class="price-badge">${h.price}</span>`:"";
   const picked = !!(window.__mapSel && window.__mapSel.has(h.id));
+  const regLabel = (EMO[h.loc]||"🏡")+" "+shortLabel(h.loc);
   return `<div class="card ${status?('s-'+status):''}${picked?' picked':''}" data-id="${h.id}" data-loc="${h.loc}" data-sleeps="${h.sleeps}">
     <div class="photo">
+      <span class="region-badge" style="--pin:${PINCOL[h.loc]||'#333'}">${regLabel}</span>
       <div class="scene ${h.loc}"><div class="emo">${EMO[h.loc]||"🏡"}</div><div class="nm">${esc(h.name)}</div></div>
       <img src="${h.img}" alt="${esc(h.name)}" loading="lazy" onerror="this.classList.add('failed')">
       <span class="sleeps-badge">Sleeps ${h.sleeps}</span>
@@ -531,6 +534,7 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
   const drv=(i,j)=>{const D=window.DRIVE;if(D&&D.order){const a=D.order.indexOf(i),b=D.order.indexOf(j);if(a>=0&&b>=0&&D.dist&&D.dist[a]&&D.dist[a][b]!=null)return{mi:D.dist[a][b]/1609.34,min:D.dur[a][b]/60};}return null;};
   const fmtMin=m=>{m=Math.round(m);const h=Math.floor(m/60),x=m%60;return h?(h+"h"+(x?(" "+x+"m"):"")):(x+"m");};
   const nm=id=>HOMES.find(h=>h.id===id).name;
+  const rg=id=>{const h=HOMES.find(x=>x.id===id);return h?h.loc:null;};
   const pairTxt=(i,j)=>{const d=drv(i,j);return d?(Math.round(d.mi)+" mi · "+fmtMin(d.min)):(Math.round(hav(COORDS[i],COORDS[j]))+" mi");};
   const pairSort=(i,j)=>{const d=drv(i,j);return d?d.mi:hav(COORDS[i],COORDS[j]);};
   const homes=HOMES.filter(h=>COORDS[h.id]);
@@ -539,7 +543,16 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
   let map=null, markers={}, lineLayer=null;
 
   const bnds=pts=>L.latLngBounds(pts);
-  function frameSet(){const pts=[];sel.forEach(id=>{if(COORDS[id])pts.push(COORDS[id]);});if(typeof activeLocs!=="undefined"&&activeLocs.size){homes.forEach(h=>{if(activeLocs.has(h.loc))pts.push(COORDS[h.id]);});}return pts;}
+  function frameSet(){
+    const pts=[];sel.forEach(id=>{if(COORDS[id])pts.push(COORDS[id]);});
+    const pr=new Set();sel.forEach(id=>{const r=rg(id);if(r)pr.add(r);});
+    if(typeof activeLocs!=="undefined"&&activeLocs.size){
+      homes.forEach(h=>{if(activeLocs.has(h.loc)&&!pr.has(h.loc))pts.push(COORDS[h.id]);});
+    } else {
+      homes.forEach(h=>pts.push(COORDS[h.id]));
+    }
+    return pts;
+  }
   function frameMap(fly){
     if(!map)return;
     const pts=frameSet();
@@ -547,8 +560,7 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
     else if(pts.length===1){const c=L.latLng(pts[0]);if(!map.getBounds().pad(-0.15).contains(c)){const z=Math.min(11,Math.max(9,map.getZoom()));fly?map.flyTo(c,z):map.setView(c,z);}}
     else{const b=bnds(homes.map(h=>COORDS[h.id]));fly?map.flyToBounds(b,{padding:[35,35],maxZoom:12}):map.fitBounds(b,{padding:[35,35],maxZoom:12});}
   }
-  function visiblePins(){const showAll=!(typeof activeLocs!=="undefined"&&activeLocs.size);return new Set(homes.filter(h=>showAll||activeLocs.has(h.loc)||sel.has(h.id)).map(h=>h.id));}
-  function syncPins(){if(!map)return;const vis=visiblePins();homes.forEach(h=>{const m=markers[h.id];if(!m)return;const show=vis.has(h.id);if(show){if(!map.hasLayer(m))m.addTo(map);}else{if(map.hasLayer(m))map.removeLayer(m);}});}
+  function syncPins(){if(!map)return;homes.forEach(h=>{const m=markers[h.id];if(m&&!map.hasLayer(m))m.addTo(map);});}
   function tipHTML(h){return h.name+" · "+(h.price||"—");}
   function styleMarkers(){homes.forEach(h=>{const m=markers[h.id];if(!m)return;const on=sel.has(h.id);m.setStyle({weight:on?3:2,fillColor:COL[h.loc],color:"#fff",fillOpacity:1});m.setRadius(on?9:6);if(on&&map&&map.hasLayer(m))m.bringToFront();});}
   function drawLines(){if(!lineLayer)return;lineLayer.clearLayers();const ss=[...sel].filter(id=>COORDS[id]);for(let a=0;a<ss.length;a++)for(let b=a+1;b<ss.length;b++){const pl=L.polyline([COORDS[ss[a]],COORDS[ss[b]]],{color:"#c4622d",weight:2.5,dashArray:"6 5",opacity:.9});if(ss.length<=3)pl.bindTooltip(pairTxt(ss[a],ss[b]),{permanent:true,direction:"center",className:"dist-tip"});pl.addTo(lineLayer);}}
@@ -562,14 +574,17 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
     el.innerHTML=pairs.map(p=>'<div class="dp-row"><span>'+nm(p.i)+' ↔ '+nm(p.j)+'</span><b>'+pairTxt(p.i,p.j)+'</b></div>').join("");
   }
   function refresh(){syncPins();styleMarkers();drawLines();panel();}
-  function toggle(id){sel.has(id)?sel.delete(id):sel.add(id);refresh();if(typeof render==="function")render();frameMap(true);}
-
+  function toggle(id){
+    sel.has(id)?sel.delete(id):sel.add(id);
+    if(typeof activeLocs!=="undefined"){sel.forEach(pid=>{const r=rg(pid);if(r)activeLocs.add(r);});if(typeof updateFilterButtons==="function")updateFilterButtons();}
+    refresh();if(typeof render==="function")render();frameMap(true);
+  }
   function applyRegions(){if(!map)return;refresh();frameMap(true);}
 
   window.__mapToggle=toggle;
   window.__mapClear=function(){sel.clear();refresh();if(typeof render==="function")render();frameMap(true);};
-  window.__mapRecenter=function(){frameMap(true);};
-  window.__mapShortlist=function(){if(typeof activeLocs!=="undefined")activeLocs.clear();if(typeof updateFilterButtons==="function")updateFilterButtons();sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});refresh();if(typeof render==="function")render();frameMap(true);};
+  window.__mapRecenter=function(){if(typeof activeLocs!=="undefined"){sel.forEach(pid=>{const r=rg(pid);if(r)activeLocs.add(r);});if(typeof updateFilterButtons==="function")updateFilterButtons();}if(typeof render==="function")render();frameMap(true);};
+  window.__mapShortlist=function(){if(typeof activeLocs!=="undefined")activeLocs.clear();sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});if(typeof activeLocs!=="undefined"){sel.forEach(pid=>{const r=rg(pid);if(r)activeLocs.add(r);});}if(typeof updateFilterButtons==="function")updateFilterButtons();refresh();if(typeof render==="function")render();frameMap(true);};
   window.__mapScroll=function(id){const c=document.querySelector('.card[data-id="'+id+'"]');if(c)c.scrollIntoView({behavior:"smooth",block:"center"});};
   window.__mapView=function(){applyRegions();};
   window.__mapApplyRegions=applyRegions;
