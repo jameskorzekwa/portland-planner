@@ -121,6 +121,9 @@
   .notebox ul{margin:0;padding-left:18px}
   .notebox li{font-size:13px;color:var(--muted);margin-bottom:6px}
   .empty{display:none;color:var(--muted);font-size:14px;padding:18px;text-align:center;border:1px dashed var(--rule);border-radius:12px}
+  .selbanner{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:12px;padding:10px 14px;margin:0 0 16px;font-size:13.5px;color:var(--ink);box-shadow:var(--shadow)}
+  .selbanner b{color:var(--evergreen)}
+  .selbanner .sb-clear{margin-left:auto;flex:none}
 
   footer{margin-top:30px;font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
   .btnlink{background:none;border:1px solid var(--rule);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink)}
@@ -167,7 +170,7 @@
   <div class="mapcard">
     <div class="maphead">
       <h2>🗺️ Map &amp; distances</h2>
-      <p>The map follows the area filter at the top of the page — pick an area there to zoom in. Click any markers (two or more) to see how far apart they are.</p>
+      <p>Tap any markers to filter the homes below to just those — and to see how far apart they are. Use the area buttons up top to zoom the map.</p>
     </div>
     <div class="mapcontrols">
       <button class="btnlink" id="map-shortlist">★ Compare my shortlist</button>
@@ -178,6 +181,7 @@
     <div id="distpanel" class="distpanel"></div>
   </div>
 
+  <div id="selbanner" class="selbanner" style="display:none"></div>
   <div id="sections"></div>
   <div class="empty" id="empty">No homes match these filters.</div>
 
@@ -400,10 +404,13 @@ function render(){
   const q = document.getElementById("search").value.trim().toLowerCase();
   const only10 = document.getElementById("t10").checked;
   const onlyFav = document.getElementById("tfav").checked;
+  const sel = window.__mapSel;
+  const selActive = !!(sel && sel.size);
   const sec = document.getElementById("sections");
   let shown = 0;
-  sec.innerHTML = LOC_ORDER.filter(k=>activeLoc==="all"||activeLoc===k).map(k=>{
+  sec.innerHTML = LOC_ORDER.filter(k=>selActive||activeLoc==="all"||activeLoc===k).map(k=>{
     const homes = HOMES.filter(h=>h.loc===k).filter(h=>{
+      if(selActive) return sel.has(h.id);
       if(only10 && h.sleeps<10) return false;
       const st = store.get("status-"+h.id,"");
       if(onlyFav && !(st==="top"||st==="interested")) return false;
@@ -413,15 +420,25 @@ function render(){
     if(!homes.length) return "";
     shown += homes.length;
     const L = LOCS[k];
-    const showAlso = (!q && !onlyFav);
+    const showAlso = (!selActive && !q && !onlyFav);
     return `<section class="loc" id="loc-${k}">
       <div class="loc-head"><h2>${L.name}</h2><div class="meta">${L.meta}</div><p>${L.blurb}</p></div>
       <div class="grid">${homes.map(cardHTML).join("")}</div>
       ${showAlso?alsoHTML(k):""}
     </section>`;
   }).join("");
+  const banner = document.getElementById("selbanner");
+  if(banner){
+    if(selActive){
+      banner.style.display = "flex";
+      banner.innerHTML = `<span>📍 Showing <b>${shown}</b> home${shown===1?"":"s"} you picked on the map.</span><button class="btnlink sb-clear" onclick="window.__mapClear&&window.__mapClear()">Show all homes</button>`;
+    } else {
+      banner.style.display = "none";
+      banner.innerHTML = "";
+    }
+  }
   document.getElementById("empty").style.display = shown? "none":"block";
-  document.getElementById("count").textContent = shown+" home"+(shown===1?"":"s")+" shown";
+  document.getElementById("count").textContent = selActive ? (shown+" selected on map") : (shown+" home"+(shown===1?"":"s")+" shown");
   wireCards();
 }
 
@@ -480,7 +497,7 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
   const drv=(i,j)=>{const D=window.DRIVE;if(D&&D.order){const a=D.order.indexOf(i),b=D.order.indexOf(j);if(a>=0&&b>=0&&D.dist&&D.dist[a]&&D.dist[a][b]!=null)return{mi:D.dist[a][b]/1609.34,min:D.dur[a][b]/60};}return null;};
   const fmtMin=m=>{m=Math.round(m);const h=Math.floor(m/60),x=m%60;return h?(h+"h"+(x?(" "+x+"m"):"")):(x+"m");};
   const homes=HOMES.filter(h=>COORDS[h.id]);
-  const sel=new Set();
+  const sel=new Set(); window.__mapSel=sel;
   const nm=id=>HOMES.find(h=>h.id===id).name;
   const lc=id=>HOMES.find(h=>h.id===id).loc;
   const pairTxt=(i,j)=>{const d=drv(i,j);return d?(Math.round(d.mi)+" mi · "+fmtMin(d.min)):(Math.round(hav(COORDS[i],COORDS[j]))+" mi");};
@@ -524,9 +541,9 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
     const rows=pairs.map(p=>`<div class="dp-row"><span>${nm(p.i)} ↔ ${nm(p.j)}</span><b>${pairTxt(p.i,p.j)}</b></div>`).join("");
     el.innerHTML=`<div class="dp-chips">${chips}</div>${rows}`;
   }
-  window.__mapToggle=id=>{sel.has(id)?sel.delete(id):sel.add(id);draw();};
-  window.__mapClear=()=>{sel.clear();draw();};
-  window.__mapShortlist=()=>{sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});draw();};
+  window.__mapToggle=id=>{sel.has(id)?sel.delete(id):sel.add(id);draw();render();};
+  window.__mapClear=()=>{sel.clear();draw();render();};
+  window.__mapShortlist=()=>{sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});draw();render();};
   window.__mapScroll=id=>{const c=document.querySelector('.card[data-id="'+id+'"]');if(c)c.scrollIntoView({behavior:"smooth",block:"center"});};
   window.__mapView=k=>{if(!VIEWS[k])k="region";VK=k;buildBase();draw();};
   var b1=document.getElementById("map-shortlist"),b2=document.getElementById("map-clear");
