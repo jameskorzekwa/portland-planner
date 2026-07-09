@@ -139,6 +139,16 @@
   .fbtn-loc::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pin,#999);margin-right:7px;vertical-align:middle}
   .leaflet-tooltip.mk-tip{background:rgba(31,61,47,.94);color:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.3);font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px}
   .leaflet-tooltip.mk-tip.leaflet-tooltip-top:before{border-top-color:rgba(31,61,47,.94)}
+  .comparetray{background:#fff;border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;margin:0 0 22px}
+  .ct-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .ct-head h3{margin:0;font-size:16px}
+  .ct-hint{font-size:12.5px;color:var(--muted)}
+  .ct-head .ct-clear{margin-left:auto}
+  .ct-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .pickbtn{border:1px solid var(--rule);background:#fff;color:var(--moss);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:800;cursor:pointer;margin:0 0 10px;align-self:flex-start;transition:.15s}
+  .pickbtn:hover{border-color:var(--moss)}
+  .pickbtn.on{background:var(--evergreen);color:#fff;border-color:var(--evergreen)}
+  .card.picked{border-color:var(--accent);box-shadow:0 0 0 2px rgba(196,98,45,.30),var(--shadow)}
 </style>
 </head>
 <body>
@@ -186,13 +196,14 @@
     <div class="mapcontrols">
       <button class="btnlink" id="map-shortlist">★ Compare my shortlist</button>
       <button class="btnlink" id="map-clear">Clear</button>
+      <button class="btnlink" id="map-recenter">⌖ Re-center on picks</button>
       <span class="map-hint" id="map-mode"></span>
     </div>
     <div id="mapwrap" class="mapwrap"></div>
     <div id="distpanel" class="distpanel"></div>
   </div>
 
-  <div id="selbanner" class="selbanner" style="display:none"></div>
+  <div id="comparetray" class="comparetray" style="display:none"></div>
   <div id="sections"></div>
   <div class="empty" id="empty">No homes match these filters.</div>
 
@@ -394,7 +405,8 @@ function cardHTML(h){
   const notes = store.get("notes-"+h.id,"");
   const opts = STATUS.map(([v,l])=>`<option value="${v}"${v===status?" selected":""}>${l}</option>`).join("");
   const priceBadge = (h.price)?`<span class="price-badge">${h.price}</span>`:"";
-  return `<div class="card ${status?('s-'+status):''}" data-id="${h.id}" data-loc="${h.loc}" data-sleeps="${h.sleeps}">
+  const picked = !!(window.__mapSel && window.__mapSel.has(h.id));
+  return `<div class="card ${status?('s-'+status):''}${picked?' picked':''}" data-id="${h.id}" data-loc="${h.loc}" data-sleeps="${h.sleeps}">
     <div class="photo">
       <div class="scene ${h.loc}"><div class="emo">${EMO[h.loc]||"🏡"}</div><div class="nm">${esc(h.name)}</div></div>
       <img src="${h.img}" alt="${esc(h.name)}" loading="lazy" onerror="this.classList.add('failed')">
@@ -404,6 +416,7 @@ function cardHTML(h){
     <div class="body">
       <h3>${h.name}</h3>
       <div class="area">${h.area}</div>
+      <button class="pickbtn${picked?' on':''}" data-pick="${h.id}">${picked?'📍 Picked — on map ✓':'＋ Compare on map'}</button>
       <div class="specs">
         <span class="spec">👥 ${h.sleeps}</span>
         <span class="spec">🛏️ ${h.br} BR</span>
@@ -435,12 +448,13 @@ function render(){
   const onlyFav = document.getElementById("tfav").checked;
   const sel = window.__mapSel;
   const selActive = !!(sel && sel.size);
-  const locs = activeLocs.size ? LOC_ORDER.filter(k=>activeLocs.has(k)) : LOC_ORDER;
+  const explicit = activeLocs.size>0;
+  const locs = explicit ? LOC_ORDER.filter(k=>activeLocs.has(k)) : LOC_ORDER;
   const sec = document.getElementById("sections");
   let shown = 0;
   sec.innerHTML = locs.map(k=>{
     const homes = HOMES.filter(h=>h.loc===k).filter(h=>{
-      if(selActive) return sel.has(h.id);
+      if(sel && sel.has(h.id)) return false;
       if(only10 && h.sleeps<10) return false;
       const st = store.get("status-"+h.id,"");
       if(onlyFav && !(st==="top"||st==="interested")) return false;
@@ -450,31 +464,33 @@ function render(){
     if(!homes.length) return "";
     shown += homes.length;
     const L = LOCS[k];
-    const showAlso = (!selActive && !q && !onlyFav);
+    const showAlso = (!q && !onlyFav);
     return `<section class="loc" id="loc-${k}">
       <div class="loc-head"><h2>${L.name}</h2><div class="meta">${L.meta}</div><p>${L.blurb}</p></div>
       <div class="grid">${homes.map(cardHTML).join("")}</div>
       ${showAlso?alsoHTML(k):""}
     </section>`;
   }).join("");
-  const banner = document.getElementById("selbanner");
-  if(banner){
+  const tray = document.getElementById("comparetray");
+  if(tray){
     if(selActive){
-      banner.style.display = "flex";
-      banner.innerHTML = `<span>📍 Showing <b>${shown}</b> home${shown===1?"":"s"} you picked on the map.</span><button class="btnlink sb-clear" onclick="window.__mapClear&&window.__mapClear()">Show all homes</button>`;
+      const picked = [...sel].map(id=>HOMES.find(h=>h.id===id)).filter(Boolean).sort((a,b)=>LOC_ORDER.indexOf(a.loc)-LOC_ORDER.indexOf(b.loc));
+      tray.style.display="block";
+      tray.innerHTML = `<div class="ct-head"><h3>🗺️ Comparing ${sel.size} home${sel.size===1?"":"s"}</h3><span class="ct-hint">Tap “📍 Picked — on map ✓” on a card to remove it.</span><button class="btnlink ct-clear" onclick="window.__mapClear&&window.__mapClear()">Clear all</button></div><div class="grid ct-grid">${picked.map(cardHTML).join("")}</div>`;
     } else {
-      banner.style.display = "none";
-      banner.innerHTML = "";
+      tray.style.display="none"; tray.innerHTML="";
     }
   }
-  document.getElementById("empty").style.display = shown? "none":"block";
-  document.getElementById("count").textContent = selActive ? (shown+" selected on map") : (shown+" home"+(shown===1?"":"s")+" shown");
+  document.getElementById("empty").style.display = (shown||selActive)? "none":"block";
+  document.getElementById("count").textContent = selActive ? (sel.size+" comparing · "+shown+" more shown") : (shown+" home"+(shown===1?"":"s")+" shown");
   wireCards();
 }
 
 function wireCards(){
   document.querySelectorAll(".card").forEach(card=>{
     const id = card.dataset.id;
+    const pb = card.querySelector(".pickbtn");
+    if(pb) pb.addEventListener("click",()=>{ if(window.__mapToggle) window.__mapToggle(id); });
     card.querySelectorAll("[data-k]").forEach(el=>{
       const k = el.dataset.k;
       const ev = el.tagName==="SELECT"?"change":"input";
@@ -515,7 +531,6 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
   const drv=(i,j)=>{const D=window.DRIVE;if(D&&D.order){const a=D.order.indexOf(i),b=D.order.indexOf(j);if(a>=0&&b>=0&&D.dist&&D.dist[a]&&D.dist[a][b]!=null)return{mi:D.dist[a][b]/1609.34,min:D.dur[a][b]/60};}return null;};
   const fmtMin=m=>{m=Math.round(m);const h=Math.floor(m/60),x=m%60;return h?(h+"h"+(x?(" "+x+"m"):"")):(x+"m");};
   const nm=id=>HOMES.find(h=>h.id===id).name;
-  const lc=id=>HOMES.find(h=>h.id===id).loc;
   const pairTxt=(i,j)=>{const d=drv(i,j);return d?(Math.round(d.mi)+" mi · "+fmtMin(d.min)):(Math.round(hav(COORDS[i],COORDS[j]))+" mi");};
   const pairSort=(i,j)=>{const d=drv(i,j);return d?d.mi:hav(COORDS[i],COORDS[j]);};
   const homes=HOMES.filter(h=>COORDS[h.id]);
@@ -523,38 +538,38 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
   const box=document.getElementById("mapwrap");
   let map=null, markers={}, lineLayer=null;
 
-  const visibleIds=()=>((typeof activeLocs!=="undefined"&&activeLocs.size)?homes.filter(h=>activeLocs.has(h.loc)):homes).map(h=>h.id);
-  const bnds=ids=>L.latLngBounds(ids.map(id=>COORDS[id]));
-  function fit(ids,fly){if(!map||!ids.length)return;const b=bnds(ids);fly?map.flyToBounds(b,{padding:[45,45],maxZoom:12}):map.fitBounds(b,{padding:[35,35],maxZoom:12});}
+  const bnds=pts=>L.latLngBounds(pts);
+  function frameSet(){const pts=[];sel.forEach(id=>{if(COORDS[id])pts.push(COORDS[id]);});if(typeof activeLocs!=="undefined"&&activeLocs.size){homes.forEach(h=>{if(activeLocs.has(h.loc))pts.push(COORDS[h.id]);});}return pts;}
+  function frameMap(fly){
+    if(!map)return;
+    const pts=frameSet();
+    if(pts.length>=2){const b=bnds(pts);fly?map.flyToBounds(b,{padding:[45,45],maxZoom:12}):map.fitBounds(b,{padding:[45,45],maxZoom:12});}
+    else if(pts.length===1){const c=L.latLng(pts[0]);if(!map.getBounds().pad(-0.15).contains(c)){const z=Math.min(11,Math.max(9,map.getZoom()));fly?map.flyTo(c,z):map.setView(c,z);}}
+    else{const b=bnds(homes.map(h=>COORDS[h.id]));fly?map.flyToBounds(b,{padding:[35,35],maxZoom:12}):map.fitBounds(b,{padding:[35,35],maxZoom:12});}
+  }
+  function visiblePins(){const showAll=!(typeof activeLocs!=="undefined"&&activeLocs.size);return new Set(homes.filter(h=>showAll||activeLocs.has(h.loc)||sel.has(h.id)).map(h=>h.id));}
+  function syncPins(){if(!map)return;const vis=visiblePins();homes.forEach(h=>{const m=markers[h.id];if(!m)return;const show=vis.has(h.id);if(show){if(!map.hasLayer(m))m.addTo(map);}else{if(map.hasLayer(m))map.removeLayer(m);}});}
   function tipHTML(h){return h.name+" · "+(h.price||"—");}
   function styleMarkers(){homes.forEach(h=>{const m=markers[h.id];if(!m)return;const on=sel.has(h.id);m.setStyle({weight:on?3:2,fillColor:COL[h.loc],color:"#fff",fillOpacity:1});m.setRadius(on?9:6);if(on&&map&&map.hasLayer(m))m.bringToFront();});}
   function drawLines(){if(!lineLayer)return;lineLayer.clearLayers();const ss=[...sel].filter(id=>COORDS[id]);for(let a=0;a<ss.length;a++)for(let b=a+1;b<ss.length;b++){const pl=L.polyline([COORDS[ss[a]],COORDS[ss[b]]],{color:"#c4622d",weight:2.5,dashArray:"6 5",opacity:.9});if(ss.length<=3)pl.bindTooltip(pairTxt(ss[a],ss[b]),{permanent:true,direction:"center",className:"dist-tip"});pl.addTo(lineLayer);}}
   function panel(){
     const el=document.getElementById("distpanel");if(!el)return;
     const ss=[...sel];const mode=document.getElementById("map-mode");
-    if(!ss.length){el.innerHTML='<span class="dp-empty">Tap two or more pins to compare how far apart they are. Toggle the area badges up top to zoom the map.</span>';if(mode)mode.textContent="";return;}
+    if(ss.length<2){el.innerHTML='<span class="dp-empty">Pick two or more homes to see how far apart they are. Toggle the area badges up top to zoom the map.</span>';if(mode)mode.textContent="";return;}
     const drvOn=!!(window.DRIVE&&window.DRIVE.order);if(mode)mode.textContent=drvOn?"Driving distance · time":"Straight-line distance";
-    const chips=ss.map(id=>'<span class="dp-chip" style="border-color:'+COL[lc(id)]+'"><a href="#" onclick="__mapScroll(\''+id+'\');return false;">'+nm(id)+'</a><b onclick="__mapToggle(\''+id+'\')">×</b></span>').join("");
     const pairs=[];for(let a=0;a<ss.length;a++)for(let b=a+1;b<ss.length;b++)pairs.push({i:ss[a],j:ss[b],s:pairSort(ss[a],ss[b])});
     pairs.sort((x,y)=>x.s-y.s);
-    const rows=pairs.map(p=>'<div class="dp-row"><span>'+nm(p.i)+' ↔ '+nm(p.j)+'</span><b>'+pairTxt(p.i,p.j)+'</b></div>').join("");
-    el.innerHTML='<div class="dp-chips">'+chips+'</div>'+rows;
+    el.innerHTML=pairs.map(p=>'<div class="dp-row"><span>'+nm(p.i)+' ↔ '+nm(p.j)+'</span><b>'+pairTxt(p.i,p.j)+'</b></div>').join("");
   }
-  function refresh(){styleMarkers();drawLines();panel();}
-  function toggle(id){sel.has(id)?sel.delete(id):sel.add(id);refresh();if(typeof render==="function")render();}
+  function refresh(){syncPins();styleMarkers();drawLines();panel();}
+  function toggle(id){sel.has(id)?sel.delete(id):sel.add(id);refresh();if(typeof render==="function")render();frameMap(true);}
 
-  function applyRegions(){
-    if(!map)return;
-    const vis=new Set(visibleIds());
-    [...sel].forEach(id=>{if(!vis.has(id))sel.delete(id);});
-    homes.forEach(h=>{const m=markers[h.id];if(!m)return;const show=vis.has(h.id);if(show){if(!map.hasLayer(m))m.addTo(map);}else{if(map.hasLayer(m))map.removeLayer(m);}});
-    fit([...vis],true);
-    refresh();
-  }
+  function applyRegions(){if(!map)return;refresh();frameMap(true);}
 
   window.__mapToggle=toggle;
-  window.__mapClear=function(){sel.clear();refresh();if(typeof render==="function")render();};
-  window.__mapShortlist=function(){if(typeof activeLocs!=="undefined")activeLocs.clear();if(typeof updateFilterButtons==="function")updateFilterButtons();sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});homes.forEach(h=>{const m=markers[h.id];if(m&&map&&!map.hasLayer(m))m.addTo(map);});if(typeof render==="function")render();refresh();if(sel.size)fit([...sel],true);else fit(visibleIds(),true);};
+  window.__mapClear=function(){sel.clear();refresh();if(typeof render==="function")render();frameMap(true);};
+  window.__mapRecenter=function(){frameMap(true);};
+  window.__mapShortlist=function(){if(typeof activeLocs!=="undefined")activeLocs.clear();if(typeof updateFilterButtons==="function")updateFilterButtons();sel.clear();HOMES.forEach(h=>{const st=store.get("status-"+h.id,"");if(st==="top"||st==="interested")sel.add(h.id);});refresh();if(typeof render==="function")render();frameMap(true);};
   window.__mapScroll=function(id){const c=document.querySelector('.card[data-id="'+id+'"]');if(c)c.scrollIntoView({behavior:"smooth",block:"center"});};
   window.__mapView=function(){applyRegions();};
   window.__mapApplyRegions=applyRegions;
@@ -571,13 +586,14 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
       m.on("click",function(){toggle(h.id);});
       m.addTo(map);markers[h.id]=m;
     });
-    fit(visibleIds(),false);
     refresh();
+    frameMap(false);
     setTimeout(function(){if(map)map.invalidateSize();},150);
   }
-  var b1=document.getElementById("map-shortlist"),b2=document.getElementById("map-clear");
+  var b1=document.getElementById("map-shortlist"),b2=document.getElementById("map-clear"),b3=document.getElementById("map-recenter");
   if(b1)b1.addEventListener("click",window.__mapShortlist);
   if(b2)b2.addEventListener("click",window.__mapClear);
+  if(b3)b3.addEventListener("click",window.__mapRecenter);
   init();
 })();
 
