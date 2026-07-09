@@ -584,6 +584,8 @@ window.DRIVE = {"order": ["ocean-house", "cb-oceanviews", "cb-viewpoint", "magic
       const m=L.circleMarker(COORDS[h.id],{radius:6,fillColor:COL[h.loc],color:"#fff",weight:2,fillOpacity:1});
       m.bindTooltip(tipHTML(h),{direction:"top",offset:[0,-4],opacity:0.95,className:"mk-tip"});
       m.on("click",function(){toggle(h.id);});
+      m.on("mouseover",function(){if(!sel.has(h.id))m.setRadius(8.5);});
+      m.on("mouseout",function(){if(!sel.has(h.id))m.setRadius(6);});
       m.addTo(map);markers[h.id]=m;
     });
     refresh();
