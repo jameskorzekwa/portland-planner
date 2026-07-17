@@ -172,7 +172,7 @@
   <div class="wrap">
     <div class="filters" id="filters"></div>
     <span class="spacer"></span>
-    <input id="search" placeholder="Search homes…" aria-label="Search">
+    <input id="search" type="search" placeholder="Search homes…" aria-label="Search">
     <label class="toggle"><input type="checkbox" id="t10"> Sleeps ≥10</label>
     <label class="toggle"><input type="checkbox" id="tfav"> Shortlist only</label>
     <span class="count" id="count"></span>
@@ -185,8 +185,8 @@
     <span><span class="dot" style="background:var(--good)"></span>Interested</span>
     <span><span class="dot" style="background:var(--maybe)"></span>Maybe</span>
     <span><span class="dot" style="background:var(--pass)"></span>Pass</span>
-    <span style="margin-left:auto" class="reset"><button class="btnlink" id="print">🖨️ Print / Save PDF</button>
-    <button class="btnlink" id="reset">Reset my notes</button></span>
+    <span style="margin-left:auto" class="reset"><button type="button" class="btnlink" id="print">🖨️ Print / Save PDF</button>
+    <button type="button" class="btnlink" id="reset">Reset my notes</button></span>
   </div>
 
   <div class="mapcard">
@@ -195,9 +195,9 @@
       <p>Tap any markers to filter the homes below to just those — and to see how far apart they are. Use the area buttons up top to zoom the map.</p>
     </div>
     <div class="mapcontrols">
-      <button class="btnlink" id="map-shortlist">★ Compare my shortlist</button>
-      <button class="btnlink" id="map-clear">Clear</button>
-      <button class="btnlink" id="map-recenter">⌖ Re-center on picks</button>
+      <button type="button" class="btnlink" id="map-shortlist">★ Compare my shortlist</button>
+      <button type="button" class="btnlink" id="map-clear">Clear</button>
+      <button type="button" class="btnlink" id="map-recenter">⌖ Re-center on picks</button>
       <span class="map-hint" id="map-mode"></span>
     </div>
     <div id="mapwrap" class="mapwrap"></div>
